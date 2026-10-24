@@ -15,7 +15,7 @@
        <script src="https://....../sdk.js" data-zone="1234567" data-sdk="show_1234567"></script>
   3. Colle-le juste en dessous de ce commentaire (sans le mettre dans un commentaire).
   4. Plus bas, change SDK_FUNCTION pour qu’il soit identique à data-sdk (ex. "show_1234567").
--->
+--><script src='//libtl.com/sdk.js' data-zone='12110097' data-sdk='show_12110097'></script>
 
 <style>
   :root {
@@ -74,7 +74,7 @@
 
 <script>
   // Doit être identique à data-sdk dans le tag Monetag (ex. "show_1234567")
-  var SDK_FUNCTION = "show_XXX";
+  var SDK_FUNCTION = "show_12110097";
 
   var tg = window.Telegram && window.Telegram.WebApp;
   var token = new URLSearchParams(location.search).get("t") || "";
