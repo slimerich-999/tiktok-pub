@@ -15,7 +15,8 @@
        <script src="https://....../sdk.js" data-zone="1234567" data-sdk="show_1234567"></script>
   3. Colle-le juste en dessous de ce commentaire (sans le mettre dans un commentaire).
   4. Plus bas, change SDK_FUNCTION pour qu’il soit identique à data-sdk (ex. "show_1234567").
---><script src='//libtl.com/sdk.js' data-zone='12110097' data-sdk='show_12110097'></script>
+-->
+<script src='//libtl.com/sdk.js' data-zone='12110097' data-sdk='show_12110097'></script>
 
 <style>
   :root {
@@ -78,7 +79,8 @@
 
   var tg = window.Telegram && window.Telegram.WebApp;
   var token = new URLSearchParams(location.search).get("t") || "";
-  var userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? String(tg.initDataUnsafe.user.id) : "";
+  var userId = new URLSearchParams(location.search).get("u") ||
+    ((tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? String(tg.initDataUnsafe.user.id) : "");
   var btn = document.getElementById("watch");
   var statusEl = document.getElementById("status");
   var busy = false;
@@ -87,7 +89,8 @@
 
   if (tg) { tg.ready(); tg.expand(); }
 
-  if (!tg || !tg.initData) {
+  var inTelegram = !!(tg && tg.platform && tg.platform !== "unknown");
+  if (!inTelegram) {
     btn.disabled = true;
     setStatus("Ouvre cette page depuis le bot Telegram.");
   }
