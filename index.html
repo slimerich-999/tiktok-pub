@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Débloquer ma vidéo</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<!--
+  ▼▼▼ ÉTAPE MONETAG ▼▼▼
+  1. Dans Monetag, crée une zone « Rewarded Interstitial » pour ta Mini App.
+  2. Copie le tag SDK fourni, il ressemble à :
+       <script src="https://....../sdk.js" data-zone="1234567" data-sdk="show_1234567"></script>
+  3. Colle-le juste en dessous de ce commentaire (sans le mettre dans un commentaire).
+  4. Plus bas, change SDK_FUNCTION pour qu’il soit identique à data-sdk (ex. "show_1234567").
+-->
+
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: var(--tg-theme-bg-color, #ffffff);
+    --fg: var(--tg-theme-text-color, #111111);
+    --muted: var(--tg-theme-hint-color, #6b7280);
+    --btn: var(--tg-theme-button-color, #2481cc);
+    --btn-fg: var(--tg-theme-button-text-color, #ffffff);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: var(--tg-theme-bg-color, #17212b);
+      --fg: var(--tg-theme-text-color, #f5f5f5);
+      --muted: var(--tg-theme-hint-color, #8b9aa8);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: env(safe-area-inset-top, 0px) 20px env(safe-area-inset-bottom, 0px);
+  }
+  main { width: 100%; max-width: 420px; text-align: center; }
+  .icon { font-size: 56px; line-height: 1; margin-bottom: 12px; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  p { margin: 0 0 24px; color: var(--muted); font-size: 15px; line-height: 1.45; }
+  button {
+    width: 100%;
+    min-height: 52px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--btn);
+    color: var(--btn-fg);
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.55; cursor: default; }
+  #status { margin: 16px 0 0; min-height: 22px; font-size: 14px; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="icon">🎬</div>
+    <h1>Débloque ta vidéo</h1>
+    <p>Regarde une courte pub : ta vidéo sans filigrane arrive ensuite directement dans le chat.</p>
+    <button id="watch" type="button">📺 Regarder la pub</button>
+    <p id="status" role="status" aria-live="polite"></p>
+  </main>
+
+<script>
+  // Doit être identique à data-sdk dans le tag Monetag (ex. "show_1234567")
+  var SDK_FUNCTION = "show_XXX";
+
+  var tg = window.Telegram && window.Telegram.WebApp;
+  var token = new URLSearchParams(location.search).get("t") || "";
+  var userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? String(tg.initDataUnsafe.user.id) : "";
+  var btn = document.getElementById("watch");
+  var statusEl = document.getElementById("status");
+  var busy = false;
+
+  function setStatus(msg) { statusEl.textContent = msg; }
+
+  if (tg) { tg.ready(); tg.expand(); }
+
+  if (!tg || !tg.initData) {
+    btn.disabled = true;
+    setStatus("Ouvre cette page depuis le bot Telegram.");
+  }
+
+  btn.addEventListener("click", function () {
+    if (busy) return;
+
+    if (SDK_FUNCTION === "show_XXX") {
+      setStatus("Page non configurée : le tag Monetag est manquant.");
+      return;
+    }
+    var show = window[SDK_FUNCTION];
+    if (typeof show !== "function") {
+      setStatus("La pub n’est pas disponible pour le moment. Réessaie dans un instant.");
+      return;
+    }
+    if (!token) {
+      setStatus("Lien invalide. Retourne dans le bot et renvoie ton lien TikTok.");
+      return;
+    }
+
+    busy = true;
+    btn.disabled = true;
+    setStatus("Chargement de la pub…");
+
+    // ymid = identifiant de l’utilisateur Telegram, utile pour le suivi côté Monetag
+    var promise = userId ? show({ ymid: userId }) : show();
+
+    promise.then(function () {
+      setStatus("✅ Merci ! Ta vidéo arrive dans le chat…");
+      setTimeout(function () {
+        tg.sendData(JSON.stringify({ t: token }));
+      }, 400);
+    }).catch(function () {
+      setStatus("La pub n’a pas pu s’afficher. Réessaie.");
+      btn.disabled = false;
+      busy = false;
+    });
+  });
+</script>
+</body>
+</html>
